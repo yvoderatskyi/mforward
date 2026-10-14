@@ -3,8 +3,8 @@
 ## Crate structure
 
 - `crates/mforward-core`: shared `Forwarder` trait and error type.
-- `crates/mforward-kubectl`: kubectl argument types and port-forward process.
-- `crates/mforward-gcp-iap`: GCP IAP argument types and gcloud tunnel process.
+- `crates/mforward-kubectl`: kubectl value objects in `src/types.rs` and port-forward process in `src/lib.rs`.
+- `crates/mforward-gcp-iap`: GCP IAP value objects in `src/types.rs` and gcloud tunnel process in `src/lib.rs`.
 - `crates/mforward-config`: TOML parsing, provider defaults, and configured-forwarder factory.
 - `crates/mforward-cli`: CLI entry point and concurrent process orchestration.
 
