@@ -1,0 +1,5 @@
+[tools]
+"cargo:cargo-pgo" = "latest"
+"cargo:cargo-wizard" = "latest"
+gcloud = "latest"
+kubectl = "latest"

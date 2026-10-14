@@ -1,0 +1,12 @@
+[package]
+name = "mforward-config"
+version.workspace = true
+edition.workspace = true
+
+[dependencies]
+mforward-core.workspace = true
+mforward-kubectl.workspace = true
+mforward-gcp-iap.workspace = true
+serde.workspace = true
+toml.workspace = true
+thiserror.workspace = true

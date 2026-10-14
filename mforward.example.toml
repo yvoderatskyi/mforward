@@ -1,0 +1,18 @@
+[defaults.kubectl]
+remote_port = 8080
+
+[defaults.gcp-iap]
+project = "my-project"
+zone = "europe-west1-b"
+remote_port = 5432
+
+[[forwarders]]
+type = "kubectl"
+service_name = "api"
+local_port = 8080
+namespace = "default"
+
+[[forwarders]]
+type = "gcp-iap"
+instance_name = "database"
+local_port = 5432

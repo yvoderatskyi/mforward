@@ -1,0 +1,11 @@
+[package]
+name = "mforward-kubectl"
+version.workspace = true
+edition.workspace = true
+
+[dependencies]
+serde.workspace = true
+mforward-core.workspace = true
+thiserror.workspace = true
+tokio = { workspace = true, features = ["process"] }
+tracing.workspace = true

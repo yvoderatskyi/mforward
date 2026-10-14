@@ -1,0 +1,5 @@
+[package]
+name = "mforward-core"
+version.workspace = true
+edition.workspace = true
+
