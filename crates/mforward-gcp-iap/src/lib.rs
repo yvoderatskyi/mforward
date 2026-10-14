@@ -44,30 +44,30 @@ pub enum GcpIapError {
 #[derive(Debug)]
 pub struct GcpIap;
 
+fn command(args: &GcpIapArgs) -> (&'static str, Vec<String>) {
+    (
+        "gcloud",
+        vec![
+            "compute".to_owned(),
+            "start-iap-tunnel".to_owned(),
+            args.instance_name.value().to_owned(),
+            args.remote_port.value().to_string(),
+            format!("--project={}", args.project.value()),
+            format!("--zone={}", args.zone.value()),
+            format!("--local-host-port=localhost:{}", args.local_port.value()),
+        ],
+    )
+}
+
 impl Forwarder for GcpIap {
     type Args = GcpIapArgs;
 
     #[tracing::instrument(fields(project= args.project.value()), skip_all)]
     async fn start(&self, args: &Self::Args) -> Result<(), ForwarderError> {
         tracing::info!("Starting GCP IAP tunnel");
-        let GcpIapArgs {
-            project,
-            zone,
-            instance_name,
-            remote_port,
-            local_port,
-        } = args;
-
-        let status = Command::new("gcloud")
-            .args([
-                "compute".to_owned(),
-                "start-iap-tunnel".to_owned(),
-                instance_name.value().to_owned(),
-                remote_port.value().to_string(),
-                format!("--project={}", project.value()),
-                format!("--zone={}", zone.value()),
-                format!("--local-host-port=localhost:{}", local_port.value()),
-            ])
+        let (program, command_args) = command(args);
+        let status = Command::new(program)
+            .args(command_args)
             .kill_on_drop(true)
             .status()
             .await
@@ -78,5 +78,34 @@ impl Forwarder for GcpIap {
         }
         tracing::info!(%status, "GCP IAP tunnel completed");
         Ok(())
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn builds_gcloud_iap_tunnel_command() {
+        let args = GcpIapArgs::new("project-a", "europe-west1-b", "database", 5432, 0).unwrap();
+
+        assert_eq!(
+            command(&args),
+            (
+                "gcloud",
+                vec![
+                    "compute",
+                    "start-iap-tunnel",
+                    "database",
+                    "5432",
+                    "--project=project-a",
+                    "--zone=europe-west1-b",
+                    "--local-host-port=localhost:0"
+                ]
+                .into_iter()
+                .map(str::to_owned)
+                .collect()
+            )
+        );
     }
 }

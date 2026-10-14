@@ -40,26 +40,28 @@ pub enum KubectlError {
 }
 pub struct Kubectl;
 
+fn command(args: &KubectlArgs) -> (&'static str, Vec<String>) {
+    (
+        "kubectl",
+        vec![
+            "port-forward".to_owned(),
+            "-n".to_owned(),
+            args.namespace.value().to_owned(),
+            format!("service/{}", args.service_name.value()),
+            format!("{}:{}", args.local_port.value(), args.remote_port.value()),
+        ],
+    )
+}
+
 impl Forwarder for Kubectl {
     type Args = KubectlArgs;
 
     #[tracing::instrument(fields(namespace= args.namespace.value()), skip_all)]
     async fn start(&self, args: &Self::Args) -> Result<(), ForwarderError> {
         tracing::info!("Starting kubectl port-forward");
-        let KubectlArgs {
-            namespace,
-            service_name,
-            remote_port,
-            local_port,
-        } = args;
-        let mut child = Command::new("kubectl")
-            .args([
-                "port-forward".to_owned(),
-                "-n".to_owned(),
-                namespace.value().to_owned(),
-                format!("service/{}", service_name.value()),
-                format!("{}:{}", local_port.value(), remote_port.value()),
-            ])
+        let (program, command_args) = command(args);
+        let mut child = Command::new(program)
+            .args(command_args)
             .kill_on_drop(true)
             .spawn()
             .map_err(KubectlError::from)?;
@@ -73,5 +75,26 @@ impl Forwarder for Kubectl {
         }
         tracing::info!("kubectl port-forward completed");
         Ok(())
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn builds_kubectl_port_forward_command() {
+        let args = KubectlArgs::new("production", "api", 8080, 0).unwrap();
+
+        assert_eq!(
+            command(&args),
+            (
+                "kubectl",
+                vec!["port-forward", "-n", "production", "service/api", "0:8080"]
+                    .into_iter()
+                    .map(str::to_owned)
+                    .collect()
+            )
+        );
     }
 }

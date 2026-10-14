@@ -31,8 +31,8 @@ async fn main() -> anyhow::Result<()> {
 
     let config = Config::read(cli.config)?;
     let mut forwarders = Forwarders::default();
-    for forwarder in ForwarderFactory::create(config) {
-        forwarders.start(forwarder, ());
+    for (index, forwarder) in ForwarderFactory::create(config).into_iter().enumerate() {
+        forwarders.start(forwarder.name(), index + 1, forwarder, ());
     }
 
     let result = forwarders.wait().await;

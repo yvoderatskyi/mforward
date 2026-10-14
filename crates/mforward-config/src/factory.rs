@@ -24,6 +24,15 @@ pub struct ConfiguredForwarder {
     provider: Provider,
 }
 
+impl ConfiguredForwarder {
+    pub fn name(&self) -> &'static str {
+        match &self.provider {
+            Provider::Kubectl(_, _) => "kubectl",
+            Provider::GcpIap(_, _) => "gcp-iap",
+        }
+    }
+}
+
 enum Provider {
     Kubectl(Kubectl, KubectlArgs),
     GcpIap(GcpIap, GcpIapArgs),
@@ -51,6 +60,8 @@ mod tests {
             .into_iter()
             .collect::<Vec<_>>();
         assert_eq!(forwarders.len(), 2);
+        assert_eq!(forwarders[0].name(), "kubectl");
+        assert_eq!(forwarders[1].name(), "gcp-iap");
         assert!(matches!(forwarders[0].provider, Provider::Kubectl(_, _)));
         assert!(matches!(forwarders[1].provider, Provider::GcpIap(_, _)));
     }

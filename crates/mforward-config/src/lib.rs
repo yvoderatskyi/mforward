@@ -20,8 +20,12 @@ pub enum ConfigError {
     Parse(#[from] toml::de::Error),
     #[error("configuration must contain at least one forwarder")]
     Empty,
-    #[error("forwarder {index}: {reason}")]
-    InvalidArgs { index: usize, reason: &'static str },
+    #[error("forwarder {index}: {source}")]
+    InvalidArgs {
+        index: usize,
+        #[source]
+        source: toml::de::Error,
+    },
 }
 
 #[derive(Debug)]
@@ -91,22 +95,20 @@ impl Config {
 
     pub fn from_toml(contents: &str) -> Result<Self, ConfigError> {
         let file: ConfigFile = toml::from_str(contents)?;
-        let forwarders = file
-            .forwarders
-            .into_iter()
-            .map(|entry| file.defaults.apply(entry).try_into())
-            .flat_map(|r| r.into_iter());
+        let forwarders =
+            file.forwarders
+                .into_iter()
+                .enumerate()
+                .map(|(index, entry)| {
+                    file.defaults.apply(entry).try_into().map_err(|source| {
+                        ConfigError::InvalidArgs {
+                            index: index + 1,
+                            source,
+                        }
+                    })
+                })
+                .collect::<Result<Vec<ForwarderConfig>, ConfigError>>()?;
         let config = Self::with_forwarders(forwarders)?;
-        for (index, forwarder) in config.forwarders.iter().enumerate() {
-            let result = match forwarder {
-                ForwarderConfig::Kubectl(_) => Ok(()),
-                ForwarderConfig::GcpIap(_) => Ok(()),
-            };
-            result.map_err(|reason| ConfigError::InvalidArgs {
-                index: index + 1,
-                reason,
-            })?;
-        }
         Ok(config)
     }
 
@@ -181,6 +183,15 @@ mod tests {
         ] {
             assert!(Config::from_toml(&invalid).is_err(), "accepted {invalid}");
         }
+    }
+
+    #[test]
+    fn reports_invalid_forwarder_index_and_preserves_decode_source() {
+        let invalid = EXAMPLE.replace("remote_port = 5432", "remote_port = 0");
+        let error = Config::from_toml(&invalid).unwrap_err();
+
+        assert!(error.to_string().starts_with("forwarder 2:"));
+        assert!(std::error::Error::source(&error).is_some());
     }
 
     #[test]
