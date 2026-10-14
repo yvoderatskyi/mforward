@@ -139,7 +139,6 @@ mod tests {
         assert!(!merged.contains_key("project"));
         let _: ForwarderConfig = merged.try_into().unwrap();
 
-        // Invalid explicit values must not fall back to defaults.
         let invalid = EXAMPLE.replace(
             "service_name = \"api\"",
             "service_name = \"api\"\nnamespace = \"\"",

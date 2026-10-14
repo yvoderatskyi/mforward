@@ -33,4 +33,5 @@ Keep provider implementations in their own crates. Keep the core forwarding trai
 
 - Use direct implementations for value objects; do not generate them with macros.
 - Prefer borrowing for reads; allocate when an owned value is needed, such as when building process arguments.
+- Use clear names and structure so source code does not need comments.
 - Add unit tests beside the behavior they cover. Configuration changes should cover parsing, defaults, invalid values, and provider selection.

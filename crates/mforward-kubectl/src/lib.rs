@@ -66,7 +66,6 @@ impl Forwarder for Kubectl {
 
         tracing::debug!(pid = ?child.id(), "Started kubectl process");
 
-        // Await until the command completes
         let status = child.wait().await.map_err(KubectlError::from)?;
         tracing::debug!(%status, "kubectl process exited");
         if !status.success() {

@@ -14,7 +14,6 @@ use mforward_config::{Config, ForwarderFactory};
     about = "Run port forwarders from a TOML configuration"
 )]
 struct Cli {
-    /// Path to the TOML configuration file
     #[arg(default_value = "mforward.toml", value_name = "CONFIG")]
     config: PathBuf,
 }
