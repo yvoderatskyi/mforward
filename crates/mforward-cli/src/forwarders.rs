@@ -17,10 +17,10 @@ pub(crate) struct Forwarders {
 }
 
 impl Forwarders {
-    pub(crate) fn start<F>(&mut self, forwarder: F, args: F::A)
+    pub(crate) fn start<F>(&mut self, forwarder: F, args: F::Args)
     where
         F: Forwarder + Send + 'static,
-        F::A: Send + 'static,
+        F::Args: Send + 'static,
     {
         self.tasks.push(Box::pin(async move {
             forwarder
@@ -53,9 +53,9 @@ mod tests {
     struct Rendezvous;
 
     impl Forwarder for Rendezvous {
-        type A = Arc<Barrier>;
+        type Args = Arc<Barrier>;
 
-        async fn start(&self, barrier: &Self::A) -> Result<(), ForwarderError> {
+        async fn start(&self, barrier: &Self::Args) -> Result<(), ForwarderError> {
             barrier.wait().await;
             Ok(())
         }
@@ -76,7 +76,7 @@ mod tests {
     struct Failing;
 
     impl Forwarder for Failing {
-        type A = ();
+        type Args = ();
 
         async fn start(&self, _: &()) -> Result<(), ForwarderError> {
             Err(std::io::Error::other("tunnel failed").into())

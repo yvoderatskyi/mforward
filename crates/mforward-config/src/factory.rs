@@ -30,9 +30,9 @@ enum Provider {
 }
 
 impl Forwarder for ConfiguredForwarder {
-    type A = ();
+    type Args = ();
 
-    async fn start(&self, _: &Self::A) -> Result<(), ForwarderError> {
+    async fn start(&self, _: &Self::Args) -> Result<(), ForwarderError> {
         match &self.provider {
             Provider::Kubectl(forwarder, args) => forwarder.start(args).await,
             Provider::GcpIap(forwarder, args) => forwarder.start(args).await,

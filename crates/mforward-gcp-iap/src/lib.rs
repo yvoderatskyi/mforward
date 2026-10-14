@@ -45,10 +45,10 @@ pub enum GcpIapError {
 pub struct GcpIap;
 
 impl Forwarder for GcpIap {
-    type A = GcpIapArgs;
+    type Args = GcpIapArgs;
 
     #[tracing::instrument(fields(project= args.project.value()), skip_all)]
-    async fn start(&self, args: &Self::A) -> Result<(), ForwarderError> {
+    async fn start(&self, args: &Self::Args) -> Result<(), ForwarderError> {
         tracing::info!("Starting GCP IAP tunnel");
         let GcpIapArgs {
             project,

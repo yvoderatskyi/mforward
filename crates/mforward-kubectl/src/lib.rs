@@ -41,10 +41,10 @@ pub enum KubectlError {
 pub struct Kubectl;
 
 impl Forwarder for Kubectl {
-    type A = KubectlArgs;
+    type Args = KubectlArgs;
 
     #[tracing::instrument(fields(namespace= args.namespace.value()), skip_all)]
-    async fn start(&self, args: &Self::A) -> Result<(), ForwarderError> {
+    async fn start(&self, args: &Self::Args) -> Result<(), ForwarderError> {
         tracing::info!("Starting kubectl port-forward");
         let KubectlArgs {
             namespace,
